@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Инфографика с нейросетью · курс на 4 недели</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,500;1,500;1,600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23FF1F8F'/%3E%3Ctext x='32' y='44' font-size='32' font-weight='800' text-anchor='middle' font-family='sans-serif' fill='%23171318'%3E20%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --paper:#FBFAF8;
+    --ink:#171318;
+    --pink:#FF1F8F;
+    --violet:#7A2FF2;
+    --pink-wash:#FFE1EF;
+    --line:rgba(23,19,24,.12);
+    --muted:#6F6A64;
+    --font-display:'Unbounded',sans-serif;
+    --font-serif:'Playfair Display',serif;
+    --font-text:'Inter',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:90px}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--font-text);font-size:18px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 28px}
+  section{padding:72px 0;border-top:1px solid var(--line)}
+  .eyebrow{font-family:var(--font-mono);font-size:14px;color:var(--violet);letter-spacing:.02em;margin:0 0 24px}
+  h2{font-family:var(--font-display);font-weight:600;font-size:clamp(24px,4.4vw,34px);line-height:1.15;margin:0 0 24px;letter-spacing:-.01em}
+  h3{font-family:var(--font-text);font-weight:500;font-size:19px;margin:0 0 6px}
+  p{margin:0 0 16px;max-width:62ch}
+  .lead{font-size:20px;max-width:58ch}
+  .accent{font-family:var(--font-serif);font-style:italic;font-weight:500}
+  .marker{background:var(--pink);color:var(--ink);padding:0 .28em;border-radius:4px;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone}
+  a{color:var(--violet)}
+  :focus-visible{outline:3px solid var(--violet);outline-offset:3px;border-radius:4px}
+
+  /* sticky progress */
+  .bar{position:sticky;top:0;z-index:20;background:rgba(251,250,248,.96);border-bottom:1px solid var(--line);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .bar .wrap{display:flex;align-items:center;gap:18px;height:62px}
+  .bar-count{font-family:var(--font-display);font-weight:700;font-size:18px;white-space:nowrap}
+  .bar-count small{font-family:var(--font-mono);font-weight:400;font-size:13px;color:var(--muted);margin-left:6px}
+  .track{flex:1;height:12px;background:var(--pink-wash);border-radius:99px;overflow:hidden}
+  .fill{height:100%;width:0;background:var(--pink);border-radius:99px;transition:width .4s cubic-bezier(.2,.7,.2,1)}
+  .bar-link{font-family:var(--font-mono);font-size:14px;color:var(--ink);white-space:nowrap}
+
+  /* hero */
+  .hero{padding:80px 0 72px;border-top:none}
+  .hero h1{font-family:var(--font-display);font-weight:700;line-height:1.08;
+    font-size:clamp(34px,8vw,66px);letter-spacing:-.02em;margin:0 0 22px}
+  .hero-mark{position:relative;display:inline-block}
+  .hero-mark::before{content:"";position:absolute;inset:0 -.14em;background:var(--pink);
+    border-radius:6px;transform:scaleX(0);transform-origin:left;
+    animation:sweep .7s .35s cubic-bezier(.2,.7,.2,1) forwards}
+  .hero-mark span{position:relative;z-index:1}
+  @keyframes sweep{to{transform:scaleX(1)}}
+  .hero-tag{font-family:var(--font-serif);font-style:italic;font-size:clamp(20px,3.4vw,27px);max-width:26ch;margin:0 0 30px}
+  .facts{display:flex;flex-wrap:wrap;gap:12px;margin:34px 0 0;padding:0;list-style:none}
+  .facts li{border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px 20px;min-width:140px}
+  .facts b{display:block;font-family:var(--font-display);font-weight:700;font-size:26px;line-height:1.1}
+  .facts span{font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+
+  .btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-text);font-weight:500;font-size:18px;
+    background:var(--ink);color:var(--paper);border:2px solid var(--ink);border-radius:12px;
+    padding:15px 26px;text-decoration:none;cursor:pointer;transition:background .15s,color .15s}
+  .btn:hover{background:var(--pink);color:var(--ink);border-color:var(--ink)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn.ghost:hover{background:var(--pink-wash)}
+  .btn.sm{font-size:16px;padding:10px 18px;border-radius:10px}
+
+  /* how it works */
+  .note{border-left:4px solid var(--pink);padding:4px 0 4px 22px;margin:28px 0 0;max-width:62ch}
+  .note p{margin:0}
+
+  /* courses */
+  .courses{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+  .course{border:1px solid var(--line);border-radius:14px;background:#fff;padding:26px;display:flex;flex-direction:column;gap:12px}
+  .course .tag{font-family:var(--font-mono);font-size:13px;color:var(--violet)}
+  .course h3{font-family:var(--font-display);font-weight:600;font-size:21px;line-height:1.2;margin:0}
+  .course p{font-size:16px;margin:0;color:#3d383f}
+  .course .btn{margin-top:auto;align-self:flex-start}
+  .course.main{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .course.main .tag{color:#B48CFF}
+  .course.main p{color:#d9d4dd}
+  .course.main .btn{background:var(--pink);color:var(--ink);border-color:var(--pink)}
+  .course.main .btn:hover{background:var(--paper);border-color:var(--paper)}
+
+  /* plan */
+  .plan-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:8px}
+  .plan-count{font-family:var(--font-display);font-weight:700;font-size:clamp(34px,6vw,52px);line-height:1;margin:0}
+  .plan-count small{font-family:var(--font-mono);font-weight:400;font-size:15px;color:var(--muted);display:block;margin-bottom:8px}
+  .week{margin-top:48px}
+  .week-title{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 18px;
+    margin:0 0 14px;padding-bottom:12px;border-bottom:2px solid var(--ink)}
+  .week-title h3{font-family:var(--font-display);font-weight:600;font-size:clamp(19px,3vw,24px);margin:0}
+  .week-title .wk{font-family:var(--font-mono);font-size:14px;color:var(--violet)}
+  .days{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+  .day{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;
+    border:1.5px solid var(--line);border-radius:14px;background:#fff;padding:20px 22px;
+    cursor:pointer;transition:border-color .15s,background .2s}
+  .day:hover{border-color:var(--ink)}
+  .tick{width:44px;height:44px;border-radius:12px;border:2px solid var(--ink);background:#fff;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex-shrink:0;
+    transition:background .15s}
+  .tick svg{width:24px;height:24px;stroke:var(--ink);stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:26;stroke-dashoffset:26;transition:stroke-dashoffset .25s}
+  .day[data-done="true"]{background:var(--pink-wash);border-color:transparent}
+  .day[data-done="true"] .tick{background:var(--pink)}
+  .day[data-done="true"] .tick svg{stroke-dashoffset:0}
+  .day[data-done="true"] .day-title{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:rgba(23,19,24,.45)}
+  .day-num{font-family:var(--font-mono);font-size:13px;color:var(--violet);margin:0 0 2px}
+  .day-title{font-family:var(--font-display);font-weight:600;font-size:clamp(17px,2.6vw,20px);line-height:1.25;margin:0 0 8px}
+  .day-src{font-size:16px;font-weight:500;margin:0 0 4px;max-width:none}
+  .day-task{font-size:16px;color:#3d383f;margin:0 0 12px;max-width:none}
+  .day-link{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:500;color:var(--ink);
+    border:1.5px solid var(--ink);border-radius:10px;padding:8px 16px;text-decoration:none;background:#fff}
+  .day-link:hover{background:var(--violet);border-color:var(--violet);color:#fff}
+  .day.is-next{border-color:var(--pink);box-shadow:0 0 0 3px var(--pink-wash)}
+  .next-flag{display:none;font-family:var(--font-mono);font-size:12px;background:var(--pink);color:var(--ink);
+    border-radius:4px;padding:1px 8px;margin-left:8px;vertical-align:1px}
+  .day.is-next .next-flag{display:inline-block}
+  .reset{margin-top:36px;font-family:var(--font-mono);font-size:14px;background:none;border:none;color:var(--muted);
+    text-decoration:underline;cursor:pointer;padding:6px 0}
+  .reset:hover{color:var(--ink)}
+
+  .done-box{display:none;margin-top:40px;background:var(--ink);color:var(--paper);border-radius:16px;padding:34px}
+  .done-box.show{display:block}
+  .done-box h3{font-family:var(--font-display);font-size:26px;margin:0 0 10px;font-weight:700}
+  .done-box p{margin:0;color:#d9d4dd}
+
+  /* prompt */
+  .prompt-wrap{position:relative;background:var(--ink);color:#EDE9F0;border-radius:16px;padding:30px 28px 26px;margin-top:8px}
+  .prompt-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .prompt-bar span{font-family:var(--font-mono);font-size:13px;color:#B48CFF}
+  .prompt-copy{font-family:var(--font-text);font-weight:500;font-size:17px;background:var(--pink);color:var(--ink);
+    border:2px solid var(--pink);border-radius:10px;padding:11px 22px;cursor:pointer;transition:background .15s,border-color .15s}
+  .prompt-copy:hover{background:var(--paper);border-color:var(--paper)}
+  .prompt-copy.ok{background:var(--paper);border-color:var(--paper)}
+  .prompt-text{font-family:var(--font-mono);font-size:15px;line-height:1.8}
+  .prompt-text p{margin:0 0 14px;max-width:none}
+  .prompt-text p:last-child{margin:0}
+  .ph{color:var(--ink);background:var(--pink);border-radius:4px;padding:0 .3em}
+  .check{margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .check div{border:1px solid var(--line);border-radius:12px;background:#fff;padding:16px 18px;font-size:16px}
+  .check b{display:block;font-family:var(--font-mono);font-weight:500;font-size:13px;color:var(--violet);margin-bottom:4px}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 64px;font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+
+  @media (max-width:640px){
+    body{font-size:17px}
+    .wrap{padding:0 18px}
+    section{padding:52px 0}
+    .hero{padding:48px 0 52px}
+    .day{padding:16px;gap:14px}
+    .tick{width:40px;height:40px}
+    .bar-link{display:none}
+    .prompt-wrap{padding:22px 18px}
+    .prompt-bar{flex-direction:column;align-items:flex-start}
+    .prompt-text{font-size:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .hero-mark::before{animation:none;transform:scaleX(1)}
+    html{scroll-behavior:auto}
+    .fill,.tick svg{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar" role="region" aria-label="Прогресс обучения">
+  <div class="wrap">
+    <div class="bar-count"><span id="barNum">0</span>/20<small>занятий</small></div>
+    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0" id="barTrack"><div class="fill" id="barFill"></div></div>
+    <a class="bar-link" href="#plan">к занятиям ↓</a>
+  </div>
+</div>
+
+<header class="wrap hero">
+  <p class="eyebrow">// курс · 4 недели · 20 занятий</p>
+  <h1>Инфографика <span class="hero-mark"><span>с нейросетью</span></span></h1>
+  <p class="hero-tag">без Photoshop, без Figma, прямо в браузере</p>
+  <a class="btn" href="#plan" id="heroCta">Начать с первого занятия</a>
+  <ul class="facts">
+    <li><b>4</b><span>недели</span></li>
+    <li><b>20</b><span>занятий</span></li>
+    <li><b>60–90</b><span>минут в день</span></li>
+    <li><b>0 ₽</b><span>за уроки</span></li>
+  </ul>
+</header>
+
+<section class="wrap">
+  <p class="eyebrow">// как это устроено</p>
+  <h2>Одна нейросеть, <span class="marker">без спешки</span></h2>
+  <p class="lead">В этой программе не нужно изучать Figma, Photoshop или другие профессиональные редакторы. Всё обучение проходит в браузере: нейросети и встроенные инструменты ИИ-сервисов делают тяжёлую часть работы.</p>
+  <p>Десять разных сервисов сразу — это путаница. Поэтому сначала осваиваем один, учимся получать хороший результат, и только потом постепенно переходим к заказам.</p>
+  <p>Итог через четыре недели: <span class="accent">3–4 серии карточек для портфолио</span>, понимание основ дизайна и готовность взять первые небольшие заказы.</p>
+  <div class="note">
+    <p>Пять занятий в неделю, по 60–90 минут. Срок ориентировочный: торопиться не нужно. Уроки бесплатные, но у сервисов ограничено число бесплатных генераций, поэтому на все 20 дней их может не хватить.</p>
+  </div>
+</section>
+
+<section class="wrap" id="courses">
+  <p class="eyebrow">// что понадобится</p>
+  <h2>Три бесплатных курса</h2>
+  <div class="courses">
+    <div class="course main">
+      <span class="tag">// основной курс</span>
+      <h3>Fabula AI: инфографика с нуля</h3>
+      <p>Пять модулей с короткими уроками: карточки, предметные фотографии, инфографика, тексты и визуальная стратегия. Для практики есть стартовые бесплатные генерации.</p>
+      <a class="btn" href="https://fabula-ai.com/education/course" target="_blank" rel="noopener">Открыть курс ↗</a>
+    </div>
+    <div class="course">
+      <span class="tag">// видео на YouTube</span>
+      <h3>24AI: полный видеоурок</h3>
+      <p>Один большой практический урок от 4 августа 2025. Композиция, цвета, шрифты, создание карточки и баннера через нейросеть.</p>
+      <a class="btn ghost" href="https://www.youtube.com/watch?v=dZ_chomjepc" target="_blank" rel="noopener">Смотреть видео ↗</a>
+    </div>
+    <div class="course">
+      <span class="tag">// дополнительно</span>
+      <h3>WBCard Academy: уроки с нейросетями</h3>
+      <p>Нужны только разделы про ИИ: генерация фона, улучшение фото, тексты и готовые макеты. Сложный ручной дизайн не изучаем.</p>
+      <a class="btn ghost" href="https://wbcard.ru/absolute-beginners/" target="_blank" rel="noopener">Открыть курс ↗</a>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="plan">
+  <p class="eyebrow">// занятия по порядку</p>
+  <div class="plan-head">
+    <h2 style="margin:0">План на <span class="marker">20 дней</span></h2>
+    <p class="plan-count"><small>// прогресс обучения</small><span id="planNum">0</span>/20 занятий</p>
+  </div>
+  <p style="margin-top:18px">Нажимай на занятие, когда оно пройдено: оно закрасится розовым. Прогресс сохраняется в этом браузере, закрывать страницу можно спокойно.</p>
+
+  <div id="weeks"></div>
+
+  <div class="done-box" id="doneBox">
+    <h3>Все 20 занятий пройдены</h3>
+    <p>Портфолио собрано, можно искать первый небольшой заказ.</p>
+  </div>
+
+  <button class="reset" id="reset">сбросить прогресс</button>
+</section>
+
+<section class="wrap" id="prompt">
+  <p class="eyebrow">// готовый запрос</p>
+  <h2>Запрос для <span class="marker">первых тренировок</span></h2>
+  <p>Скопируй текст ниже и вставь в ИИ-сервис, который понимает текстовые инструкции и позволяет загрузить фото товара. Замени слова в квадратных скобках на свои, а фото приложи.</p>
+
+  <div class="prompt-wrap">
+    <div class="prompt-bar">
+      <span>// запрос для нейросети</span>
+      <button class="prompt-copy" id="copyPrompt" type="button">Скопировать запрос</button>
+    </div>
+    <div class="prompt-text" id="promptText">
+      <p>Создай профессиональную главную карточку товара для Wildberries по загруженной фотографии.</p>
+      <p>Сохрани форму, цвет, пропорции, упаковку и надписи на самом товаре без изменений.</p>
+      <p>Размести товар крупно в центре композиции. Сделай аккуратный светлый фон, мягкие тени и современное оформление.</p>
+      <p>Добавь название товара: <span class="ph">[НАЗВАНИЕ]</span>.</p>
+      <p>Покажи два преимущества: <span class="ph">[ПРЕИМУЩЕСТВО 1]</span> и <span class="ph">[ПРЕИМУЩЕСТВО 2]</span>.</p>
+      <p>Используй крупный читаемый русский текст. Не придумывай характеристики и не добавляй неподтверждённых обещаний. Вертикальный формат 3:4.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <p>Нейросеть не всегда точно выполняет такие инструкции. После генерации внимательно проверь картинку.</p>
+  </div>
+  <div class="check">
+    <div><b>// 01</b>Надписи: нет ли опечаток и лишних букв</div>
+    <div><b>// 02</b>Размеры: числа совпадают с настоящими</div>
+    <div><b>// 03</b>Товар: форма, цвет и упаковка как на фото</div>
+  </div>
+</section>
+
+<footer class="wrap">
+  курс «инфографика с нейросетью» · 4 недели · 20 занятий · прогресс хранится в твоём браузере
+</footer>
+
+<script>
+  const FAB = 'https://fabula-ai.com/education/course';
+  const YT  = 'https://www.youtube.com/watch?v=dZ_chomjepc';
+  const WBC = 'https://wbcard.ru/absolute-beginners/';
+  const WB  = 'https://seller.wildberries.ru/instructions/ru/ru/material/item-photo-rules-recommendations-and-common-mistakes';
+
+  const weeks = [
+    {title:'Первая карточка с нуля', days:[
+      [1,'Подготовка','Создать папку для работ, научиться скачивать изображения и загружать их в браузере. Открыть Fabula AI и разобраться с регистрацией.','Fabula AI',FAB],
+      [2,'Первая генерация','Модуль 1: «Карточка, которая выглядит как у топов — за 5 минут». Повторить урок на одном простом товаре.','Fabula AI',FAB],
+      [3,'Красивые фотографии','Модуль 2: «Фото, за которые не стыдно». Сделать два варианта окружения товара.','Fabula AI',FAB],
+      [4,'Инфографика','Модуль 3: «Инфографика как инструмент роста продаж». Добавить на карточку два подтверждённых преимущества.','Fabula AI',FAB],
+      [5,'Надписи','Модуль 4: «Текст и шрифты, которые усиливают карточку». Исправить заголовки и сохранить лучшую работу.','Fabula AI',FAB],
+    ]},
+    {title:'Как делать карточки качественно', days:[
+      [6,'Что привлекает внимание','Модуль 5: «Стратегия визуала: тренды и тесты для роста продаж». Изучить карточки конкурентов.','Fabula AI',FAB],
+      [7,'Основы хорошего дизайна','Полный видеоурок: посмотреть раздел об основах композиции, цветах и шрифтах. Сравнить три карточки одного товара.','24AI, YouTube',YT],
+      [8,'Повторение практики','Практическая часть: пошаговое создание карточки товара. Повторить в сервисе, если позволяют бесплатные лимиты.','24AI, YouTube',YT],
+      [9,'Рекламный баннер','Практическая часть по баннеру. Создать альтернативный вариант изображения.','24AI, YouTube',YT],
+      [10,'Своя серия','Самостоятельная практика: сделать обложку и 2–3 дополнительных слайда для одного товара.','Fabula AI',FAB],
+    ]},
+    {title:'Новые возможности ИИ', days:[
+      [11,'Текст через нейросеть','Урок №8 «Три базовые встроенные нейронки». Генерация описаний и преимуществ.','WBCard Academy',WBC],
+      [12,'Улучшение фотографий','Урок №9 «Улучшение качества изображения при помощи нейросети».','WBCard Academy',WBC],
+      [13,'Новый фон','Урок №10 «Генерация заднего фона для товара».','WBCard Academy',WBC],
+      [14,'Изображения и запросы','Урок №15 «Рисуем фон при помощи искусственного интеллекта».','WBCard Academy',WBC],
+      [15,'Готовый дизайн через ИИ','Урок №33 «Нейросеть для дизайна». Потренироваться получать редактируемый макет.','WBCard Academy',WBC],
+    ]},
+    {title:'Портфолио и первые заказы', days:[
+      [16,'Требования маркетплейсов','Изучить официальные требования Wildberries к изображениям и проверить форматы своих работ.','Wildberries, требования к фото',WB],
+      [17,'Первый проект для портфолио','Сделать серию из 3–5 изображений косметического товара на основе реальных фото и характеристик.'],
+      [18,'Второй проект','Сделать аналогичную серию для товара для кухни. Использовать другое визуальное оформление.'],
+      [19,'Третий проект','Сделать серию для предмета декора. Проверить все надписи и внешний вид товара.'],
+      [20,'Подготовка к заказам','Собрать лучшие работы в отдельную папку, оформить описание услуги и попробовать найти небольшой заказ.'],
+    ]},
+  ];
+
+  const TOTAL = 20, KEY = 'infograph-course-progress-v1';
+  let done = new Set();
+  try { done = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch(e){}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch(e){} };
+
+  const host = document.getElementById('weeks');
+  weeks.forEach((w, i) => {
+    const sec = document.createElement('div');
+    sec.className = 'week';
+    sec.innerHTML = '<div class="week-title"><h3>Неделя '+(i+1)+'. '+w.title+'</h3><span class="wk" data-week="'+i+'"></span></div><ul class="days"></ul>';
+    const ul = sec.querySelector('.days');
+    w.days.forEach(([n, title, task, src, url]) => {
+      const li = document.createElement('li');
+      li.className = 'day'; li.id = 'day-'+n; li.dataset.n = n; li.dataset.week = i;
+      li.innerHTML =
+        '<button class="tick" type="button" role="checkbox" aria-checked="false" aria-label="Отметить: день '+n+', '+title+'">'+
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg></button>'+
+        '<div>'+
+          '<p class="day-num">// день '+n+'<span class="next-flag">сейчас</span></p>'+
+          '<h4 class="day-title" style="margin:0">'+title+'</h4>'+
+          (src ? '<p class="day-src">'+src+'</p>' : '')+
+          '<p class="day-task">'+task+'</p>'+
+          (url ? '<a class="day-link" href="'+url+'" target="_blank" rel="noopener">Открыть ссылку ↗</a>' : '')+
+        '</div>';
+      ul.appendChild(li);
+    });
+    host.appendChild(sec);
+  });
+
+  function render(){
+    const n = done.size;
+    let next = null;
+    document.querySelectorAll('.day').forEach(el => {
+      const id = +el.dataset.n, d = done.has(id);
+      el.dataset.done = d;
+      el.querySelector('.tick').setAttribute('aria-checked', d);
+      if(!d && next === null) next = id;
+      el.classList.remove('is-next');
+    });
+    if(next !== null) document.getElementById('day-'+next).classList.add('is-next');
+    document.querySelectorAll('.wk').forEach(el => {
+      const wi = +el.dataset.week;
+      const c = weeks[wi].days.filter(d => done.has(d[0])).length;
+      el.textContent = '// '+c+' из 5';
+    });
+    ['barNum','planNum'].forEach(id => document.getElementById(id).textContent = n);
+    document.getElementById('barFill').style.width = (n/TOTAL*100)+'%';
+    document.getElementById('barTrack').setAttribute('aria-valuenow', n);
+    document.getElementById('doneBox').classList.toggle('show', n === TOTAL);
+    const cta = document.getElementById('heroCta');
+    if(n === 0){ cta.textContent = 'Начать с первого занятия'; cta.href = '#day-1'; }
+    else if(next !== null){ cta.textContent = 'Продолжить: день '+next; cta.href = '#day-'+next; }
+    else { cta.textContent = 'Курс пройден'; cta.href = '#plan'; }
+  }
+
+  host.addEventListener('click', e => {
+    if(e.target.closest('a')) return;
+    const li = e.target.closest('.day');
+    if(!li) return;
+    const id = +li.dataset.n;
+    done.has(id) ? done.delete(id) : done.add(id);
+    save(); render();
+  });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    if(done.size && confirm('Сбросить весь прогресс и начать сначала?')){ done.clear(); save(); render(); }
+  });
+
+  document.getElementById('copyPrompt').addEventListener('click', async e => {
+    const btn = e.currentTarget;
+    const text = [...document.querySelectorAll('#promptText p')].map(p => p.textContent.trim()).join('\n\n');
+    try { await navigator.clipboard.writeText(text); }
+    catch(err){
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    const prev = btn.textContent; btn.textContent = 'Скопировано'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = prev; btn.classList.remove('ok'); }, 1500);
+  });
+
+  render();
+</script>
+</body>
+</html>
